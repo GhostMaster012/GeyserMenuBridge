@@ -1,0 +1,28 @@
+name: GeyserMenuBridge
+version: ${project.version}
+main: com.oblivion.geysermenubridge.GeyserMenuBridge
+api-version: '1.20' # Compatible con Spigot API 1.20.1
+# Cargar después de ProtocolLib y Geyser para asegurar que sus APIs estén disponibles
+loadbefore: []
+depend: [ProtocolLib, Geyser-Spigot] # Geyser-Spigot es el nombre del plugin de Geyser en Spigot/Paper
+authors: [JulesAI, Oblivion]
+description: ${project.description}
+website: https://github.com/yourusername/GeyserMenuBridge # Reemplazar si aplica
+
+commands:
+  gmbdebug:
+    description: Activa/desactiva el modo debug para GeyserMenuBridge.
+    usage: /gmbdebug [player]
+    permission: geysermenubridge.debug
+  testmenu:
+    description: Abre un menú de prueba para GeyserMenuBridge.
+    usage: /testmenu
+    permission: geysermenubridge.testmenu
+
+permissions:
+  geysermenubridge.debug:
+    description: Permite usar el comando de debug.
+    default: op
+  geysermenubridge.testmenu:
+    description: Permite usar el comando de testmenu.
+    default: op
