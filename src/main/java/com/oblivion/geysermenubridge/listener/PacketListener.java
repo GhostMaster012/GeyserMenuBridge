@@ -40,20 +40,32 @@ public class PacketListener {
         }
 
         // Listener para OPEN_WINDOW
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info("[PacketListener DEBUG] Intentando registrar listener para OPEN_WINDOW...");
+        }
         protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.NORMAL, PacketType.Play.Server.OPEN_WINDOW) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 handleOpenWindow(event);
             }
         });
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info("[PacketListener DEBUG] Listener para OPEN_WINDOW registrado.");
+        }
 
         // Listener para WINDOW_ITEMS
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info("[PacketListener DEBUG] Intentando registrar listener general para WINDOW_ITEMS...");
+        }
         protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.NORMAL, PacketType.Play.Server.WINDOW_ITEMS) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 handleWindowItems(event);
             }
         });
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info("[PacketListener DEBUG] Listener general para WINDOW_ITEMS registrado.");
+        }
 
         // Listener para CLOSE_WINDOW (desde el cliente)
         protocolManager.addPacketListener(new PacketAdapter(plugin, ListenerPriority.NORMAL, PacketType.Play.Client.CLOSE_WINDOW) {
@@ -78,6 +90,10 @@ public class PacketListener {
     }
 
     private void handleOpenWindow(PacketEvent event) {
+        // Log de TRACE para ver todos los paquetes, incluso antes de filtrar por jugador Bedrock
+        plugin.getLogger().info(String.format("[PacketListener TRACE] handleOpenWindow: Packet detectado para: %s",
+            event.getPlayer() != null ? event.getPlayer().getName() : "Unknown Player"));
+
         Player player = event.getPlayer();
         if (player == null || !platformDetector.isBedrockPlayer(player)) {
             return;
@@ -102,6 +118,10 @@ public class PacketListener {
     }
 
     private void handleWindowItems(PacketEvent event) {
+        plugin.getLogger().info(String.format("[PacketListener TRACE] handleWindowItems: Packet detectado para: %s, Window ID: %d",
+            event.getPlayer() != null ? event.getPlayer().getName() : "Unknown Player",
+            event.getPacket().getIntegers().read(0)));
+
         Player player = event.getPlayer();
         if (player == null || !platformDetector.isBedrockPlayer(player)) {
             return;
@@ -162,7 +182,6 @@ public class PacketListener {
         }
 
         event.setCancelled(true);
-        // CORRECCIÓN DEL ERROR DE LOGGER: Usar String.format() o concatenación para un solo argumento.
         plugin.getLogger().info(String.format("[PacketListener INFO] WINDOW_ITEMS (actualización) para %s (OriginalWinID: %d) procesado y cancelado.",
                 player.getName(), windowId));
     }
@@ -254,8 +273,8 @@ public class PacketListener {
             }
         });
 
-        // Listener para WINDOW_ITEMS ya está manejado en el método principal
-        plugin.getLogger().info("[GeyserMenuBridge INFO] PacketListeners para SET_SLOT registrados.");
+        // El listener para actualizaciones de WINDOW_ITEMS ya está integrado en el manejador general de WINDOW_ITEMS
+        plugin.getLogger().info("[GeyserMenuBridge INFO] PacketListeners para SET_SLOT (actualizaciones) registrados.");
     }
 
     private void handleSetSlot(PacketEvent event) {

@@ -48,9 +48,22 @@ public final class GeyserMenuBridge extends JavaPlugin {
         if (playerPlatformDetector.isFloodgateAvailable()) {
             // Pasar BedrockMenuManager al PacketListener
             packetListener = new com.oblivion.geysermenubridge.listener.PacketListener(this, playerPlatformDetector, bedrockMenuManager);
-            logger.info("PacketListener inicializado.");
+            logger.info("PacketListener instancia creada."); // Cambiado de "inicializado" a "instancia creada"
+            if (packetListener != null) {
+                logger.info("[GMB DEBUG] PacketListener NO es null después de la instanciación.");
+                if (com.comphenix.protocol.ProtocolLibrary.getProtocolManager() != null) {
+                    logger.info("[GMB DEBUG] ProtocolManager NO es null.");
+                    // El registro de listeners ocurre dentro del constructor de PacketListener,
+                    // por lo que no podemos verificar getPacketListeners().size() aquí directamente post-registro
+                    // sin una refactorización mayor. Los logs dentro de PacketListener confirmarán el registro.
+                } else {
+                    logger.severe("[GMB DEBUG] ¡ProtocolManager ES NULL! ProtocolLib podría no estar cargado correctamente.");
+                }
+            } else {
+                 logger.severe("[GMB DEBUG] ¡PacketListener ES NULL después de la instanciación! Algo falló gravemente.");
+            }
         } else {
-            logger.warning("PacketListener no se inicializará porque Floodgate API no está disponible.");
+            logger.warning("PacketListener no se creará/inicializará porque Floodgate API no está disponible.");
         }
 
 

@@ -9,9 +9,22 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 
+import com.oblivion.geysermenubridge.GeyserMenuBridge; // Import necesario
+
 public class TestMenu {
 
-    public static void openTestMenu(Player player) {
+    // Modificado para aceptar la instancia del plugin
+    public static void openTestMenu(Player player, GeyserMenuBridge plugin) {
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info(String.format("[TestMenu DEBUG] Abriendo test menu para %s.", player.getName()));
+            if (plugin.getPlayerPlatformDetector() != null) {
+                boolean isBedrock = plugin.getPlayerPlatformDetector().isBedrockPlayer(player);
+                plugin.getLogger().info(String.format("[TestMenu DEBUG] Verificación de plataforma para %s en TestMenu: Es Bedrock: %b", player.getName(), isBedrock));
+            } else {
+                 plugin.getLogger().warning("[TestMenu DEBUG] PlayerPlatformDetector es null en TestMenu.");
+            }
+        }
+
         Inventory testInventory = Bukkit.createInventory(null, 27, "§1Menú de Prueba §bGeyserMB");
 
         ItemStack diamond = new ItemStack(Material.DIAMOND, 1);
@@ -94,6 +107,12 @@ public class TestMenu {
         // Fila 3
         testInventory.setItem(22, barrier); // Centro inferior
 
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info(String.format("[TestMenu DEBUG] A punto de llamar player.openInventory() para %s.", player.getName()));
+        }
         player.openInventory(testInventory);
+        if (plugin.getCommandManager().isDebugMode()) {
+            plugin.getLogger().info(String.format("[TestMenu DEBUG] player.openInventory() ejecutado para %s.", player.getName()));
+        }
     }
 }
