@@ -19,7 +19,7 @@ public final class GeyserMenuBridge extends JavaPlugin {
         logger = getLogger();
 
         // Guardar configuración por defecto si no existe
-        saveDefaultConfig();
+        // saveDefaultConfig(); // Comentado para evitar error si config.yml no está en resources
 
         logger.info("==================================================");
         logger.info("GeyserMenuBridge ha sido HABILITADO!");
