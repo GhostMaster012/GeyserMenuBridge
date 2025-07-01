@@ -1,3 +1,17 @@
 com/oblivion/geysermenubridge/GeyserMenuBridge.class
+com/oblivion/geysermenubridge/bridge/BedrockMenuManager.class
+com/oblivion/geysermenubridge/listener/PacketListener$4.class
+com/oblivion/geysermenubridge/bridge/BridgedMenuInfo.class
+com/oblivion/geysermenubridge/menus/TestMenu.class
+com/oblivion/geysermenubridge/listener/PacketListener$3.class
+com/oblivion/geysermenubridge/listener/InventoryListener.class
 com/oblivion/geysermenubridge/detector/PlayerPlatformDetector.class
+com/oblivion/geysermenubridge/bridge/PendingMenu.class
+com/oblivion/geysermenubridge/listener/PacketListener.class
+com/oblivion/geysermenubridge/listener/PacketListener$2.class
+com/oblivion/geysermenubridge/synchronization/ClickSynchronizer.class
+com/oblivion/geysermenubridge/util/ItemSerializer.class
+com/oblivion/geysermenubridge/conversion/MenuConverter.class
+com/oblivion/geysermenubridge/listener/PacketListener$1.class
 com/oblivion/geysermenubridge/command/CommandManager.class
+com/oblivion/geysermenubridge/listener/PacketListener$5.class

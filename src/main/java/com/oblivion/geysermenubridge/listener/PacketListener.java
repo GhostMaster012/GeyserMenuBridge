@@ -122,7 +122,7 @@ public class PacketListener {
 
             if (plugin.getCommandManager().isDebugMode()) {
                 plugin.getLogger().info(String.format("[PacketListener DEBUG] WINDOW_ITEMS (inicial) para %s, Window ID: %d, State ID: %d, Items count: %d",
-                        player.getName(), windowId, stateId, items.size()));
+                                        player.getName(), windowId, stateId, items.size()));
             }
 
             bedrockMenuManager.completePendingMenuWithItems(player, windowId, items);
@@ -162,6 +162,7 @@ public class PacketListener {
         }
 
         event.setCancelled(true);
+        // CORRECCIÓN DEL ERROR DE LOGGER: Usar String.format() o concatenación para un solo argumento.
         plugin.getLogger().info(String.format("[PacketListener INFO] WINDOW_ITEMS (actualización) para %s (OriginalWinID: %d) procesado y cancelado.",
                 player.getName(), windowId));
     }
