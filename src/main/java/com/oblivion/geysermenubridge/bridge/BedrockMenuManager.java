@@ -117,21 +117,27 @@ public class BedrockMenuManager {
         for(ItemStack item : bukkitInventory.getContents()) {
             if (item != null) itemCount++;
         }
-        plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Intentando enviar inventario a %s vía Geyser API. Título: '%s', Tamaño Bukkit: %d, Slots con items: %d, OriginalWinID: %d",
+        plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Preparando para abrir inventario puenteado para %s. Título: '%s', Tamaño Bukkit: %d, Slots con items: %d, OriginalWinID: %d",
                                 bedrockPlayer.getName(), plainTitle, bukkitInventory.getSize(), itemCount, originalWindowId));
-        try {
-            GeyserApi.api().sendInventory(bedrockPlayer.getUniqueId(), bukkitInventory);
-            plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Inventario falso enviado exitosamente a %s (Título: '%s', Tamaño: %d)",
-                                   bedrockPlayer.getName(), plainTitle, inventorySize));
 
-            BridgedMenuInfo bridgedInfo = new BridgedMenuInfo(bukkitInventory, originalWindowId, menuData.getTitle());
-            activeBridgedMenus.put(bedrockPlayer.getUniqueId(), bridgedInfo);
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            try {
+                bedrockPlayer.openInventory(bukkitInventory);
+                // Geyser interceptará esta apertura y la traducirá para el cliente Bedrock.
 
-        } catch (Exception e) {
-            plugin.getLogger().severe("[BedrockMenuManager ERROR] Error al enviar inventario a jugador Bedrock " + bedrockPlayer.getName() + ": " + e.getMessage());
-            e.printStackTrace();
-            activeBridgedMenus.remove(bedrockPlayer.getUniqueId());
-        }
+                plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Inventario puenteado abierto para %s (Título: '%s', Tamaño: %d) usando player.openInventory().",
+                                       bedrockPlayer.getName(), plainTitle, inventorySize));
+
+                BridgedMenuInfo bridgedInfo = new BridgedMenuInfo(bukkitInventory, originalWindowId, menuData.getTitle());
+                activeBridgedMenus.put(bedrockPlayer.getUniqueId(), bridgedInfo);
+
+            } catch (Exception e) {
+                plugin.getLogger().severe("[BedrockMenuManager ERROR] Error al ejecutar bedrockPlayer.openInventory() para " + bedrockPlayer.getName() + ": " + e.getMessage());
+                e.printStackTrace();
+                // Si falla la apertura, limpiar el posible estado inconsistente.
+                activeBridgedMenus.remove(bedrockPlayer.getUniqueId());
+            }
+        });
     }
 
     public void playerDisconnected(Player player) {

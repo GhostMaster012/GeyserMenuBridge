@@ -1,0 +1,12 @@
+/app/src/main/java/com/oblivion/geysermenubridge/synchronization/ClickSynchronizer.java
+/app/src/main/java/com/oblivion/geysermenubridge/command/CommandManager.java
+/app/src/main/java/com/oblivion/geysermenubridge/GeyserMenuBridge.java
+/app/src/main/java/com/oblivion/geysermenubridge/bridge/PendingMenu.java
+/app/src/main/java/com/oblivion/geysermenubridge/bridge/BedrockMenuManager.java
+/app/src/main/java/com/oblivion/geysermenubridge/bridge/BridgedMenuInfo.java
+/app/src/main/java/com/oblivion/geysermenubridge/detector/PlayerPlatformDetector.java
+/app/src/main/java/com/oblivion/geysermenubridge/conversion/MenuConverter.java
+/app/src/main/java/com/oblivion/geysermenubridge/listener/PacketListener.java
+/app/src/main/java/com/oblivion/geysermenubridge/listener/InventoryListener.java
+/app/src/main/java/com/oblivion/geysermenubridge/util/ItemSerializer.java
+/app/src/main/java/com/oblivion/geysermenubridge/menus/TestMenu.java

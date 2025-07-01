@@ -1,0 +1,3 @@
+com/oblivion/geysermenubridge/GeyserMenuBridge.class
+com/oblivion/geysermenubridge/detector/PlayerPlatformDetector.class
+com/oblivion/geysermenubridge/command/CommandManager.class

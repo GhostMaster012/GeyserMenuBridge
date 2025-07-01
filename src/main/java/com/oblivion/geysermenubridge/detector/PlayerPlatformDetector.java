@@ -9,21 +9,29 @@ import java.util.UUID;
 public class PlayerPlatformDetector {
 
     private final FloodgateApi floodgateApi;
-    private boolean floodgateAvailable;
+    private final boolean floodgateAvailable; // Hacer también final para consistencia
 
     public PlayerPlatformDetector(GeyserMenuBridge plugin) {
+        FloodgateApi tempApi = null;
+        boolean tempAvailable = false;
         try {
-            this.floodgateApi = FloodgateApi.getInstance();
-            this.floodgateAvailable = true;
+            tempApi = FloodgateApi.getInstance();
+            tempAvailable = true;
             plugin.getLogger().info("Floodgate API encontrada. La detección de jugadores Bedrock está activa.");
-        } catch (Exception e) {
-            // Esto puede ocurrir si Floodgate no está presente o falla al cargar su API.
-            // No ClassDefFoundError si Floodgate no está, IllegalStateException si ya está instanciada o no.
-            this.floodgateApi = null;
-            this.floodgateAvailable = false;
-            plugin.getLogger().warning("Floodgate API no encontrada. La detección de jugadores Bedrock no funcionará.");
-            plugin.getLogger().warning("Asegúrate de que Floodgate está instalado y funcionando correctamente.");
+        } catch (NoClassDefFoundError | IllegalStateException e) {
+            // Capturar específicamente NoClassDefFoundError si Floodgate no está en el classpath,
+            // o IllegalStateException si la API no está lista o ya fue instanciada incorrectamente.
+            plugin.getLogger().warning("Floodgate API no encontrada o no pudo ser inicializada. La detección de jugadores Bedrock no funcionará.");
+            plugin.getLogger().warning("Detalles del error: " + e.getMessage());
+            // tempApi ya es null, tempAvailable ya es false
+        } catch (Exception e) { // Captura genérica para cualquier otro error inesperado
+            plugin.getLogger().severe("Error inesperado al intentar inicializar Floodgate API: " + e.getMessage());
+            e.printStackTrace(); // Loguear el stacktrace completo para errores inesperados
+            // tempApi ya es null, tempAvailable ya es false
         }
+
+        this.floodgateApi = tempApi;
+        this.floodgateAvailable = tempAvailable;
     }
 
     /**
@@ -33,10 +41,10 @@ public class PlayerPlatformDetector {
      * @return true si el jugador es de Bedrock, false en caso contrario o si Floodgate no está disponible.
      */
     public boolean isBedrockPlayer(Player player) {
-        if (!floodgateAvailable || player == null) {
+        if (!this.floodgateAvailable || player == null || this.floodgateApi == null) { // Chequeo extra para floodgateApi
             return false;
         }
-        return floodgateApi.isFloodgatePlayer(player.getUniqueId());
+        return this.floodgateApi.isFloodgatePlayer(player.getUniqueId());
     }
 
     /**
@@ -46,10 +54,10 @@ public class PlayerPlatformDetector {
      * @return true si el jugador es de Bedrock, false en caso contrario o si Floodgate no está disponible.
      */
     public boolean isBedrockPlayer(UUID playerUuid) {
-        if (!floodgateAvailable || playerUuid == null) {
+        if (!this.floodgateAvailable || playerUuid == null || this.floodgateApi == null) { // Chequeo extra para floodgateApi
             return false;
         }
-        return floodgateApi.isFloodgatePlayer(playerUuid);
+        return this.floodgateApi.isFloodgatePlayer(playerUuid);
     }
 
     /**
@@ -57,6 +65,6 @@ public class PlayerPlatformDetector {
      * @return true si Floodgate está disponible, false en caso contrario.
      */
     public boolean isFloodgateAvailable() {
-        return floodgateAvailable;
+        return this.floodgateAvailable;
     }
 }
