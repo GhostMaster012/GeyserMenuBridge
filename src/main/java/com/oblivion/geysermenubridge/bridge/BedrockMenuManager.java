@@ -22,7 +22,6 @@ public class BedrockMenuManager {
     // Mapa para rastrear la información del menú que se está mostrando actualmente a un jugador de Bedrock
     private final Map<UUID, BridgedMenuInfo> activeBridgedMenus = new HashMap<>();
 
-
     public BedrockMenuManager(GeyserMenuBridge plugin) {
         this.plugin = plugin;
     }
@@ -59,27 +58,27 @@ public class BedrockMenuManager {
         return activeBridgedMenus.get(playerUuid);
     }
 
-
     public void completePendingMenuWithItems(Player bedrockPlayer, int originalJavaWindowId, List<ItemStack> itemsFromJavaMenu) {
         PendingMenu pendingMenu = getPendingMenu(bedrockPlayer, originalJavaWindowId);
         if (pendingMenu != null) {
             pendingMenu.setItems(itemsFromJavaMenu);
             plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Items recibidos para menú pendiente de %s (Original Window ID: %d). Título: %s. Tamaño: %d",
-                                   bedrockPlayer.getName(), originalJavaWindowId, pendingMenu.getTitle(), pendingMenu.getSize()));
+                    bedrockPlayer.getName(), originalJavaWindowId, pendingMenu.getTitle(), pendingMenu.getSize()));
 
             sendInventoryToBedrock(bedrockPlayer, pendingMenu, originalJavaWindowId);
 
-            pendingMenus.remove(bedrockPlayer.getUniqueId()); // No necesita log de debug aquí, removePendingMenu ya lo tiene si está activo
+            pendingMenus.remove(bedrockPlayer.getUniqueId());
             if (plugin.getCommandManager().isDebugMode()) {
                 plugin.getLogger().info("[BedrockMenuManager DEBUG] Menú pendiente procesado (items recibidos y enviado a Bedrock) y removido para " + bedrockPlayer.getName());
             }
         } else {
             plugin.getLogger().warning(String.format("[BedrockMenuManager WARN] Se recibieron items para Original Window ID %d para el jugador %s pero no había un menú pendiente registrado o el ID no coincide.",
-                                       originalJavaWindowId, bedrockPlayer.getName()));
+                    originalJavaWindowId, bedrockPlayer.getName()));
         }
     }
 
     private void sendInventoryToBedrock(Player bedrockPlayer, PendingMenu menuData, int originalWindowId) {
+        // Verificar que es jugador de Bedrock usando GeyserApi
         if (!GeyserApi.api().isBedrockPlayer(bedrockPlayer.getUniqueId())) {
             plugin.getLogger().warning("[BedrockMenuManager WARN] Intento de enviar inventario a un jugador que no es de Bedrock: " + bedrockPlayer.getName());
             return;
@@ -88,24 +87,29 @@ public class BedrockMenuManager {
         int inventorySize = menuData.getSize();
         if (inventorySize <= 0) {
             plugin.getLogger().warning(String.format("[BedrockMenuManager WARN] Tamaño de inventario inválido o cero para %s: %d. No se enviará el inventario.",
-                                       bedrockPlayer.getName(), inventorySize));
+                    bedrockPlayer.getName(), inventorySize));
             return;
         }
 
+        // Ajustar tamaño a múltiplos de 9 (filas completas)
         if (inventorySize > 54) inventorySize = 54;
         else if (inventorySize % 9 != 0) {
             inventorySize = ((inventorySize / 9) + 1) * 9;
             if (inventorySize > 54) inventorySize = 54;
         }
 
+        // Procesar título del menú
         Component titleComponent = GsonComponentSerializer.gson().deserialize(menuData.getTitle());
         String plainTitle = LegacyComponentSerializer.legacySection().serialize(titleComponent);
         if (plainTitle.length() > 32) {
             plainTitle = plainTitle.substring(0, 32);
         }
 
+        // Crear inventario Bukkit que será mostrado al jugador Bedrock
         Inventory bukkitInventory = Bukkit.createInventory(null, inventorySize, plainTitle);
         List<ItemStack> items = menuData.getItems();
+
+        // Llenar el inventario con los items del menú original
         for (int i = 0; i < menuData.getSize() && i < items.size() && i < inventorySize; i++) {
             ItemStack item = items.get(i);
             if (item != null) {
@@ -113,31 +117,50 @@ public class BedrockMenuManager {
             }
         }
 
+        // Contar items para logging
         long itemCount = 0;
         for(ItemStack item : bukkitInventory.getContents()) {
             if (item != null) itemCount++;
         }
-        plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Preparando para abrir inventario puenteado para %s. Título: '%s', Tamaño Bukkit: %d, Slots con items: %d, OriginalWinID: %d",
-                                bedrockPlayer.getName(), plainTitle, bukkitInventory.getSize(), itemCount, originalWindowId));
 
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            try {
-                bedrockPlayer.openInventory(bukkitInventory);
-                // Geyser interceptará esta apertura y la traducirá para el cliente Bedrock.
+        plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Creando inventario para %s. Título: '%s', Tamaño: %d, Slots con items: %d, OriginalWinID: %d",
+                bedrockPlayer.getName(), plainTitle, bukkitInventory.getSize(), itemCount, originalWindowId));
 
-                plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Inventario puenteado abierto para %s (Título: '%s', Tamaño: %d) usando player.openInventory().",
-                                       bedrockPlayer.getName(), plainTitle, inventorySize));
+        try {
+            // CORRECCIÓN: En lugar de usar sendInventory() que no existe,
+            // abrimos el inventario directamente usando Bukkit
+            // Geyser automáticamente manejará la conversión para el cliente Bedrock
 
-                BridgedMenuInfo bridgedInfo = new BridgedMenuInfo(bukkitInventory, originalWindowId, menuData.getTitle());
-                activeBridgedMenus.put(bedrockPlayer.getUniqueId(), bridgedInfo);
+            // Variables finales para usar en la lambda
+            final String finalTitle = plainTitle;
+            final int finalInventorySize = inventorySize;
+            final UUID playerUUID = bedrockPlayer.getUniqueId();
+            final String playerName = bedrockPlayer.getName();
 
-            } catch (Exception e) {
-                plugin.getLogger().severe("[BedrockMenuManager ERROR] Error al ejecutar bedrockPlayer.openInventory() para " + bedrockPlayer.getName() + ": " + e.getMessage());
-                e.printStackTrace();
-                // Si falla la apertura, limpiar el posible estado inconsistente.
-                activeBridgedMenus.remove(bedrockPlayer.getUniqueId());
-            }
-        });
+            // Programar la apertura del inventario en el hilo principal
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                try {
+                    bedrockPlayer.openInventory(bukkitInventory);
+                    plugin.getLogger().info(String.format("[BedrockMenuManager INFO] Inventario abierto exitosamente para %s (Título: '%s', Tamaño: %d)",
+                            playerName, finalTitle, finalInventorySize));
+
+                    // Registrar el menú como activo
+                    BridgedMenuInfo bridgedInfo = new BridgedMenuInfo(bukkitInventory, originalWindowId, menuData.getTitle());
+                    activeBridgedMenus.put(playerUUID, bridgedInfo);
+
+                } catch (Exception e) {
+                    plugin.getLogger().severe("[BedrockMenuManager ERROR] Error al abrir inventario para jugador Bedrock " + playerName + ": " + e.getMessage());
+                    e.printStackTrace();
+                    activeBridgedMenus.remove(playerUUID);
+                }
+            });
+
+        } catch (Exception e) {
+            plugin.getLogger().severe("[BedrockMenuManager ERROR] Error al programar apertura de inventario para jugador Bedrock " + bedrockPlayer.getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            final UUID playerUUID = bedrockPlayer.getUniqueId();
+            activeBridgedMenus.remove(playerUUID);
+        }
     }
 
     public void playerDisconnected(Player player) {
@@ -151,7 +174,9 @@ public class BedrockMenuManager {
         if (bridgedInfo != null && bridgedInfo.getBridgedInventory().equals(closedInventory)) {
             activeBridgedMenus.remove(player.getUniqueId());
             plugin.getLogger().info("[BedrockMenuManager INFO] Jugador Bedrock " + player.getName() + " cerró el menú puenteado (Original Window ID: " + bridgedInfo.getOriginalWindowId() + ")");
+
             // TODO: Considerar enviar PacketPlayInCloseWindow al servidor con bridgedInfo.getOriginalWindowId()
+            // Esto podría ser necesario para notificar al plugin original que el menú se cerró
         }
     }
 }
