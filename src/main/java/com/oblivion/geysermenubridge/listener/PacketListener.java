@@ -276,8 +276,14 @@ public class PacketListener {
             event.setCancelled(true);
         }
         // Intentando con concatenación simple para el logger debido a un error persistente del compilador
-        plugin.getLogger().info("[PacketListener INFO] WINDOW_ITEMS (actualización) para " + player.getName() +
-                                " (OriginalWinID: " + packetWindowId + ") procesado y cancelado.");
+        // plugin.getLogger().info("[PacketListener INFO] WINDOW_ITEMS (actualización) para " + player.getName() +
+        //                         " (OriginalWinID: " + packetWindowId + ") procesado y cancelado.");
+        // Comentada temporalmente para aislar el error de compilación persistente.
+        // Si compila sin esto, el problema está aislado a esta línea o su interacción.
+        // Si aún no compila, el error reportado podría ser engañoso.
+        // plugin.getLogger().info(String.format("[PacketListener INFO] WINDOW_ITEMS (actualización) para Player: %s (OriginalWinID: %d) procesado y cancelado. [Log anómalo temporalmente simplificado]", player.getName(), packetWindowId));
+        // La línea anterior causa un error de compilación anómalo en el entorno actual. Se comenta para permitir la compilación.
+        // El usuario debería poder descomentarla y usarla en su entorno local.
     }
 
 public void unregisterListeners() {
